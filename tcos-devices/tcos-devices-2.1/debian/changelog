@@ -1,3 +1,29 @@
+tcos-devices (2.1-5) unstable; urgency=low
+
+  * nfs.xml: added option to set have /home on disk partition 
+  * debian/changelog
+
+ -- Steffen Hoenig <s.hoenig@openthinclient>  Fri, 29 Jan 2016 00:44:05 +0000
+
+tcos-devices (2.1-4) unstable; urgency=low
+
+  * hardwaretype.xml: add nvidia 304 driver
+
+ -- Joern Frenzel <j.frenzel@openthinclient.com>  Fri, 04 Dec 2015 20:58:09 +0100
+
+tcos-devices (2.1-3) unstable; urgency=low Fri, 04 Dec 2015 20:58:09 +0100
+
+  * display.xml: removed item "graphic card", no longer needed
+  * display.xml: added tooltipps
+
+ -- Joern Frenzel <j.frenzel@openthinclient.com>  Mon, 28 Sep 2015 15:39:02 +0200
+
+tcos-devices (2.1-2) unstable; urgency=medium Fri, 04 Dec 2015 20:58:09 +0100
+
+  *  display.xml: new feature manual connector definition in display
+
+ -- Lars Behrens <l.behrens@openthinclient.com>  Fri, 25 Sep 2015 11:24:26 +0200
+
 tcos-devices (2.1-1) unstable; urgency=low
 
   * have a lot more switches for clients and hardwaretypes

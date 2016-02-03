@@ -84,7 +84,22 @@
 	    <option name="TV-1" value="TV-1" />                                                                                                                                                 
 	    <option name="TV-2" value="TV-2" />
 	  </choice>
-
+        <entry name="cust_connector" value="">
+             <tip lang="de" value="&lt;html&gt;
+		Geben Sie hier den Anschlussnamen direkt ein, wenn&lt;br&gt;
+		dieser nicht in obiger Liste aufgeführt ist.&lt;br&gt;
+		Tipp: Nutzen Sie das Kommando &quot;xrandr -q&quot; um eine &lt;br&gt;
+                Liste der Monitoranschlüsse des Clients zu ermitteln.
+             &lt;/html&gt;"/>
+             <tip lang="en" value="&lt;html&gt;
+                If you connector is not listed above, &lt;br&gt;
+		please type it in here manually. &lt;br&gt;
+	        Hint: Use the command &quot;xrandr -q&quot; to get &lt;br&gt;
+	        a list of all monitor connectors available on the client system.
+             &lt;/html&gt;"/>
+	      <label lang="de" value="manueller Anschlussname (hat Vorrang)" />
+	      <label lang="en" value="connectors name (has precedency)" />
+        </entry>
 	  <choice name="resolution" value="1920x1080">
 	    <label lang="de" value="Auflösung" />
 	    <label lang="en" value="Resolution" />
@@ -209,8 +224,23 @@
 	    <option name="TV-1" value="TV-1" />                                                                                                                                                 
 	    <option name="TV-2" value="TV-2" />
 	  </choice>
-
-	  <choice name="resolution" value="1920x1080">
+        <entry name="cust_connector" value="">
+             <tip lang="de" value="&lt;html&gt;
+		Geben Sie hier den Anschlussnamen direkt ein, wenn&lt;br&gt;
+		dieser nicht in obiger Liste aufgeführt ist.&lt;br&gt;
+		Tipp: Nutzen Sie das Kommando &quot;xrandr -q&quot; um eine &lt;br&gt;
+                Liste der Monitoranschlüsse des Clients zu ermitteln.
+             &lt;/html&gt;"/>
+             <tip lang="en" value="&lt;html&gt;
+                If you connector is not listed above, &lt;br&gt;
+		please type it in here manually. &lt;br&gt;
+	        Hint: Use the command &quot;xrandr -q&quot; to get &lt;br&gt;
+	        a list of all monitor connectors available on the client system.
+             &lt;/html&gt;"/>
+	      <label lang="de" value="manueller Anschlussname (hat Vorrang)" />
+	      <label lang="en" value="connectors name (has precedency)" />
+        </entry>
+       <choice name="resolution" value="1920x1080">
 	    <label lang="de" value="Auflösung" />
 	    <label lang="en" value="Resolution" />
 	    <option name="800x600" value="800x600" />

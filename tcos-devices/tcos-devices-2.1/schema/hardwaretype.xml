@@ -48,6 +48,10 @@
                 <label lang="de" value="erzwinge Treiber Nvidia 173.xx"/>
                 <label lang="en" value="force Nvidia driver 173.xx"/>
             </option>
+            <option value="nvidia=304">
+                <label lang="de" value="erzwinge Treiber Nvidia 304.xx"/>
+                <label lang="en" value="force Nvidia driver 304.xx"/>
+            </option>
             <option value="nvidia=340">
                 <label lang="de" value="erzwinge Treiber Nvidia 340.xx"/>
                 <label lang="en" value="force Nvidia driver 340.xx"/>
