@@ -167,7 +167,20 @@ def main():
     init()
     device = getAssignedDisplay()
     displayset = {}
+
+    ### Parse User Command if exists
+    if getUserCommand(device):
+        try:
+            subprocess.check_call(getUserCommand(device),shell=True)
+        except:
+            log.log(2,"User Command failed! Please check the syntax, falling back to manager configuration")
+            pass
+        else:
+            log.log(0,"adjusted specified settings")
+            sys.exit(0)
+            
     connectors = getConnectors()
+
     for screen in ('firstscreen','secondscreen'):
         settings = {
             'connected_to': getConnector(device, screen, connectors),
@@ -189,16 +202,7 @@ def main():
     else:
         log.log(0, "turned off: "+(getOffConnectors(getConnectors())))
 
-    ### Parse User Command if exists
-    if getUserCommand(device):
-        try:
-            subprocess.check_call(getUserCommand(device),shell=True)
-        except:
-            log.log(2,"User Command failed! Please check the syntax, falling back to manager configuration")
-            pass
-        else:
-            log.log(0,"adjusted specified settings")
-            sys.exit(0)
+
     ####  screen configuration
     for screen in ('firstscreen', 'secondscreen'):
         if displayset[screen]['connected_to'] != 'NONE':
