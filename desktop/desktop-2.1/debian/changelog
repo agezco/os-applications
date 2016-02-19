@@ -1,3 +1,9 @@
+desktop (2.1-10) unstable; urgency=medium
+
+  * dconf fix for screensaver settings 
+ -- Lars Behrens <l.behrens@openthinclient.com>  Fri, 19 Feb 2016 18:06:58 +0100
+
+
 desktop (2.1-9) unstable; urgency=medium
 
   * fixed: screen blanking settings. 
@@ -5,7 +11,7 @@ desktop (2.1-9) unstable; urgency=medium
   *        +or disable energy saving 
   * feature: predefined audio volume in audio settings
 
- -- Steffen Hoenig <l.behrens@openthinclient.com>  Fri, 19 Feb 2016 18:06:58 +0100
+ -- Lars Behrens <l.behrens@openthinclient.com>  Fri, 19 Feb 2016 18:06:58 +0100
 
 desktop (2.1-8) unstable; urgency=low
 

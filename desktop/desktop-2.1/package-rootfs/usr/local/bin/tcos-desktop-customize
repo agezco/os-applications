@@ -193,6 +193,14 @@ if __name__ == '__main__':
     '''IMPORTANT: As the java component does not initialize empty elements we
        do need to provide the default settings as a dict
     '''
+
+    try:
+        # clone dmps timeout into dconf database
+        ENTRY['org_mate_power-manager.sleep-display-ac'] = ENTRY['org_mate_screensaver.dpms-time']
+    except:
+        log.log(3,"screensaver incomplete")
+        pass
+
     DEFAULT = {'org_mate_desktop_media-handling.automount': True,
                'org_mate_desktop_media-handling.automount-open': False,
                'org_mate_panel_toplevels_top.orientation': 'top',
@@ -203,12 +211,12 @@ if __name__ == '__main__':
                'org_mate_screensaver.lock-enabled': False,
                'org_mate_screensaver.dpms-on': True,
                'org_mate_screensaver.dpms-time': 600,
+               'org_mate_power-manager.sleep-display-ac': 600,
                'org_mate_marco_global-keybindings.run-command-1': '<Ctrl><Alt>x',
                'org_mate_marco_global-keybindings.switch-windows': '<Alt>Tab',
                'org_mate_marco_global-keybindings.numlock': 'none',
                'org_mate_desktop_session.logout-prompt': True,
                'org_mate_desktop_session.idle-delay': 5 }
-
 
     try:
         ENTRY.pop('schema_version')
@@ -221,7 +229,7 @@ if __name__ == '__main__':
     dict_lists = format_ldap_key(DEFAULT)
     md = merge_dicts(dict_lists, special_key='schema')
     try:
-	write_keys(os.path.join(PATH_SCHEMA, FILE), md)
+	    write_keys(os.path.join(PATH_SCHEMA, FILE), md)
     except IOError as err:
         print('Write Error:', err)
 
