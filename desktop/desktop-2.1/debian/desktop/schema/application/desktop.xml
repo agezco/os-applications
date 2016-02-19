@@ -45,7 +45,7 @@
                 <label lang="en" value="bottom"/>
             </option>
         </choice>
-      </group>
+     </group> 
       <group name="org_mate_desktop_session">
         <label value="Abmelden" lang="de"/>
         <label value="Logout" lang="en"/>
@@ -106,12 +106,20 @@
             </option>
         </choice>
         <entry name="dpms-time__INT" value="600">
-            <label lang="de" value="Zeit bis der Bildschirm abgeschaltet wird (DPMS) in Sekunden"/>
-            <label lang="en" value="Sets the time until the monitor will be switched off. (DPMS). In Seconds"/>
+            <label lang="de" value="Zeit bis der Bildschirm abgeschaltet wird in Sekunden"/>
+            <label lang="en" value="Sets the time until the monitor will be switched off. In Seconds"/>
         </entry>
         <entry name="custom-slideshow" value="">
-            <label lang="de" value="Benutzer definierte Diashow (Pfad)"/>
+            <label lang="de" value="Benutzerdefinierte Diashow (Pfad)"/>
             <label lang="en" value="custom slideshow (path)"/>
+        </entry>
+    </group>
+    <group name="pulseaudio">
+        <label value="Audio Einstellungen" lang="de"/>
+        <label value="audio settings" lang="en"/>
+        <entry name="master-volume" value="80">
+            <label lang="de" value="Lautstaerke in Prozent"/>
+            <label lang="en" value="Volume in percent"/>
         </entry>
     </group>
     <group name="org_mate_marco_global-keybindings">
