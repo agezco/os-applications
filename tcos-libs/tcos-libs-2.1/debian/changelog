@@ -1,3 +1,9 @@
+tcos-libs (2.1-10) unstable; urgency=low
+
+  * tcos.py: fix for for old-style .desktop-reload based packages 
+
+ -- Steffen Hoenig <s.hoenig@openthinclient>  Thu, 25 Feb 2016 16:35:33 +0000
+
 tcos-libs (2.1-9) unstable; urgency=low
 
   * tcos.py: refactored writeDesktopFiles() 
