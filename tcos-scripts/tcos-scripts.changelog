@@ -1,3 +1,18 @@
+tcos-scripts (2.1-23) unstable; urgency=low
+
+  [ Steffen Hoenig ]
+  * added the option to put /home on disk partition 
+  * you need tcos-devices (>= 2.1-2)
+  * merged tcos-scripts-21 und -22
+
+  [ Lars Behrens ]
+  * added former tcos_displayrc for freerdp alignment
+  * parse info about secondary screen position
+  * extended tcos_displayrc with positioning information for the Primary
+    screen
+
+ -- Steffen Hoenig <s.hoenig@openthinclient>  Fri, 29 Jan 2016 00:48:33 +0000 
+
 tcos-scripts (2.1-20) unstable; urgency=medium
 
   * added DVI-VGA adapter functionality
