@@ -1,3 +1,10 @@
+freerdp-git (2.1-1.2-25) unstable; urgency=medium
+
+  * added Manager configuration field: override following manual parameter
+    settings 
+
+ -- Lars Behrens <l.behrens@openthinclient.com>  Thu, 25 Feb 2016 17:22:30 +0100
+
 freerdp-git (2.1-1.2-24.1) unstable; urgency=medium
 
   * improved devilspie reliability by setting positioning preferences before
