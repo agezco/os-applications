@@ -147,20 +147,6 @@
 	<label lang="de" value="Manuelle Startparameter"/>
 	<label lang="en" value="Manual start parameters"/>
       </entry>
-      <choice name="override" value="false">
-        <label lang="en" value="Manuel parameters override following parameter settings" />
-        <label lang="de" value="Manuelle Paramter uebschreiben folgende Parametereinstellungen" />        
-      <option value="true">
-          <label lang="de" value="ja (Ueberschreibe weitere Parametereinstellungen)" />
-          <label lang="en" value="yes (Override following parameter settings)" />
-      </option>
-      <option value="false">
-          <label lang="de" value="nein (Haenge manuelle Parameter der Folgekonfiguration an)"/>
-          <label lang="en" value="no (append manuel parameters to following parameter settings)"/>
-      </option>
-  </choice>
-
-     
     <choice name="network" value="auto">
       <label lang="en" value="Network connection type" />
       <label lang="de" value="Netzwerk verbindungstyp" />        
@@ -172,11 +158,6 @@
           <label lang="de" value="lan"/>
           <label lang="en" value="lan"/>
       </option>
-       <option value="off">
-          <label lang="de" value="aus"/>
-          <label lang="en" value="off"/>
-      </option>
-     
     </choice>
       <choice name="ProtocolSecurity" value="tls">
 	<label lang="de" value="Sicherheitsprotokoll"/>
