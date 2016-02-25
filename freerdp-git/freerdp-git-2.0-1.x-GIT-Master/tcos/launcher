@@ -12,6 +12,7 @@ import commands
 import pytcos.tcos as tcos
 import pytcos.tcos_gtk as tcos_gtk
 
+log = tcos.Logger()
 
 # TODO
 
@@ -44,19 +45,127 @@ l = tcos.Launcher()
 u = tcos.Util()
 u_gtk = tcos_gtk.Util()
 
-ExitAction = l.ENTRY.get('General.ExitAction', '')
-Port = l.ENTRY.get('Application.Port', '')
-Server = l.ENTRY.get('Application.Server', '')
+Parameters = ''
 
-manualParameters = l.ENTRY.get('Application.ConnectionParameters.Parameter', '')
-ProtocolSecurity = l.ENTRY.get('Application.ConnectionParameters.ProtocolSecurity', 'tls')
-ValidateCert = l.ENTRY.get('Application.ConnectionParameters.ValidateCert', 'no')
-NetworkOption =  l.ENTRY.get('Application.ConnectionParameters.network', 'auto')
+ExitAction = ''
+Port = ''
+Server = ''
 
-Domain = l.ENTRY.get('Application.Account.Domain', '')
-User = u.shellQuote(l.ENTRY.get('Application.Account.User', ''))
-Password = u.shellQuote(l.ENTRY.get('Application.Account.Password', ''))
-activateSSO = l.ENTRY.get('Application.Account.activateSSO','no')
+manualParameters = ''
+ProtocolSecurity = ''
+ValidateCert = ''
+NetworkOption = ''
+
+Domain = ''
+User = ''
+Password = ''
+activateSSO = ''
+
+def gen_devilspie(tOffset, lOffset):
+    if not os.path.exists("/home/tcos/.devilspie/"):
+        os.makedirs("/home/tcos/.devilspie/")
+    devilspiecfg='''\
+    (if (is (window_class) "xfreerdp")
+        (begin
+                (undecorate)
+    '''
+    devilspiecfg += '(geometry \"15x15+' + str(lOffset) + '+' + str(tOffset) + '\")))'
+
+    with open('/home/tcos/.devilspie/freerdp.ds', 'w') as fobj:
+        fobj.write(devilspiecfg)
+
+def fetch_ldap_stage1():
+    global ExitAction
+    global Port 
+    global Server 
+
+    global manualParameters 
+    global ProtocolSecurity 
+    global ValidateCert 
+    global NetworkOption 
+
+    global Domain 
+    global User 
+    global Password 
+    global activateSSO    
+
+    try:
+        ExitAction = l.ENTRY.get('General.ExitAction', '')
+        Port = l.ENTRY.get('Application.Port', '')
+        Server = l.ENTRY.get('Application.Server', '')
+
+        manualParameters = l.ENTRY.get('Application.ConnectionParameters.Parameter', '')
+        ProtocolSecurity = l.ENTRY.get('Application.ConnectionParameters.ProtocolSecurity', 'tls')
+        ValidateCert = l.ENTRY.get('Application.ConnectionParameters.ValidateCert', 'no')
+        NetworkOption =  l.ENTRY.get('Application.ConnectionParameters.network', 'auto')
+
+        Domain = l.ENTRY.get('Application.Account.Domain', '')
+        User = u.shellQuote(l.ENTRY.get('Application.Account.User', ''))
+        Password = u.shellQuote(l.ENTRY.get('Application.Account.Password', ''))
+        activateSSO = l.ENTRY.get('Application.Account.activateSSO','no')       
+    except Exception, e:
+        import traceback
+        print traceback.format_exc()
+        log.log(2, "fetching ldap failed in stage 1")
+        pass
+
+def fetch_ldap_stage2():
+    global Parameters
+    try:
+        if l.ENTRY.get('Application.ConnectionParameters.AudioMode', 'no') == 'yes':
+                Parameters += ' /sound'
+    
+        if l.ENTRY.get('Application.ConnectionParameters.Mic', 'no') == 'yes':
+                Parameters += ' /microphone'
+
+        if l.ENTRY.get('Application.ConnectionParameters.redirectSmartcard', 'no') == 'yes':
+                Parameters += ' /smartcard:0'
+
+        if l.ENTRY.get('Application.ConnectionParameters.redirectMedia', 'no') == 'yes':
+            Parameters += ' "/drive:media,/media"'           # we need to quote the parameter, otherwise os.system eats the commas
+
+        # yes/no (BOOL) parameters, we want to use. Some with our own defaults.
+        #
+        if l.ENTRY.get('Application.ConnectionParameters.redirectClipboard', 'yes') == 'yes':
+                Parameters += ' +clipboard' 
+            # +clipboard (default:off)    Redirect clipboard
+
+        if l.ENTRY.get('Application.ConnectionParameters.wallpaper', 'no') == 'no':
+                Parameters += ' -wallpaper'
+            # -wallpaper (default:on)     Wallpaper
+
+        if l.ENTRY.get('Application.ConnectionParameters.themes', 'no') == 'no':
+                Parameters += ' -themes'
+            # -themes (default:on)        Themes
+     
+        if l.ENTRY.get('Application.ConnectionParameters.decorations', 'no') == 'no':
+                Parameters += ' -decorations'
+            # -decorations (default:on)   Window decorations
+
+        if l.ENTRY.get('Application.ConnectionParameters.smoothFonts', 'no') == 'yes':
+                Parameters += ' +fonts'
+            # +fonts (default:off)        Smooth fonts (ClearType)
+
+        if l.ENTRY.get('Application.ConnectionParameters.encryption', 'no') == 'no':
+                Parameters += ' -encryption '
+            # -encryption (default:on)    encryption (hack!)
+
+        if l.ENTRY.get('Application.ConnectionParameters.compression', 'no') == 'no':
+                Parameters += ' -compression'
+            # -compression (default:on)   Compression
+
+        if l.ENTRY.get('Application.ConnectionParameters.async-update', 'yes') == 'yes':
+                Parameters += ' +async-update'
+            # +async-update (default:off) asynchronous update
+     
+        # remoteFX stuff
+        if l.ENTRY.get('Application.RFX.remoteFX', 'no') == 'yes':
+                Parameters += ' /rfx /rfx-mode:' + l.ENTRY.get('Application.RFX.remoteFXMode', 'image')
+    except Exception, e:
+        import traceback
+        print traceback.format_exc()
+        log.log(2, "fetching ldap failed in stage 2")
+        pass
 
 
 # color depth
@@ -70,60 +179,12 @@ KeyboardLayout = l.ENTRY.get('Application.ConnectionParameters.KeyboardLayout', 
 
 while True:
     # set some  always used parameters in front of line 
+    fetch_ldap_stage1()
     Parameters = ' /sec:' + ProtocolSecurity + ' /bpp:' +  ColorDepth +  ' /kbd:' + KeyboardLayout + ' /network:' + NetworkOption   
-
-    if l.ENTRY.get('Application.ConnectionParameters.AudioMode', 'no') == 'yes':
-            Parameters += ' /sound'
-
-    if l.ENTRY.get('Application.ConnectionParameters.Mic', 'no') == 'yes':
-            Parameters += ' /microphone'
-
-    if l.ENTRY.get('Application.ConnectionParameters.redirectSmartcard', 'no') == 'yes':
-            Parameters += ' /smartcard:0'
-
-    if l.ENTRY.get('Application.ConnectionParameters.redirectMedia', 'no') == 'yes':
-	    Parameters += ' "/drive:media,/media"'		     # we need to quote the parameter, otherwise os.system eats the commas
-
-    # yes/no (BOOL) parameters, we want to use. Some with our own defaults.
-    #
-    if l.ENTRY.get('Application.ConnectionParameters.redirectClipboard', 'yes') == 'yes':
-            Parameters += ' +clipboard' 
-	    # +clipboard (default:off)    Redirect clipboard
-
-    if l.ENTRY.get('Application.ConnectionParameters.wallpaper', 'no') == 'no':
-            Parameters += ' -wallpaper'
-	    # -wallpaper (default:on)     Wallpaper
-
-    if l.ENTRY.get('Application.ConnectionParameters.themes', 'no') == 'no':
-            Parameters += ' -themes'
-	    # -themes (default:on)        Themes
- 
-    if l.ENTRY.get('Application.ConnectionParameters.decorations', 'no') == 'no':
-            Parameters += ' -decorations'
-	    # -decorations (default:on)   Window decorations
-
-    if l.ENTRY.get('Application.ConnectionParameters.smoothFonts', 'no') == 'yes':
-            Parameters += ' +fonts'
-	    # +fonts (default:off)        Smooth fonts (ClearType)
-
-    if l.ENTRY.get('Application.ConnectionParameters.encryption', 'no') == 'no':
-            Parameters += ' -encryption '
-	    # -encryption (default:on)    encryption (hack!)
-
-    if l.ENTRY.get('Application.ConnectionParameters.compression', 'no') == 'no':
-            Parameters += ' -compression'
-	    # -compression (default:on)   Compression
-
-    if l.ENTRY.get('Application.ConnectionParameters.async-update', 'yes') == 'yes':
-            Parameters += ' +async-update'
-	    # +async-update (default:off) asynchronous update
- 
-    # remoteFX stuff
-    if l.ENTRY.get('Application.RFX.remoteFX', 'no') == 'yes':
-            Parameters += ' /rfx /rfx-mode:' + l.ENTRY.get('Application.RFX.remoteFXMode', 'image')
+    fetch_ldap_stage2()
 
 
-     # all the window positioning stuff
+    # all the window positioning stuff
     #
     if l.ENTRY.get('Application.Window.Multimon', 'no') == 'yes':
             Parameters += ' /f /multimon:force'
@@ -136,13 +197,16 @@ while True:
             if WindowType == 'fullscreen_primary':
                     Parameters += ' /f /monitors:0 ' 
             elif WindowType == 'fullscreen_primary_TB':
-                    if os.getenv('firstscreenWidth') is None or os.getenv('firstscreenHeigth') is None :
+                    if os.getenv('firstscreenWidth') is None or os.getenv('firstscreenHeight') is None :
                             os.system('zenity --error --text "No propper screen settings found.\nFalling back to fullscreen.\nPlease contact your administrator."')
                             if debug: 
                                     print "\n WARNING: No propper screen settings found. Falling back to fullscreen. \n"
                             Parameters += ' /f /monitors:0 ' # fallback
                     else:
-                            Parameters += ' -decorations /size:' + os.getenv('firstscreenWidth') + 'x' + str(int(os.getenv('firstscreenHeigth'))-25) + '+0+25' + ' /monitors:0 ' 
+                            if os.getenv('primary') == 'right':
+                                    print "we came so far!"
+                                    gen_devilspie(25, int(os.getenv('secondscreenWidth')))
+                            Parameters += ' -decorations /size:' + str(os.getenv('firstscreenWidth')) + 'x' + str(int(os.getenv('firstscreenHeight'))-int(25)) + '+0+25' + ' /monitors:0 ' 
             elif WindowType == 'fullscreen_secondary':
                     Parameters += ' /f /monitors:1 ' 
             elif WindowType == 'manual':
@@ -181,8 +245,8 @@ while True:
 
             # In case of wrong credentials an exhaustive loop needs to be prevented
             if User == '\'\'' or Password == '\'\''  :
-		    os.system('zenity --error  --title="Failed to authenticate." --text  "Authentication failure! Please check the credentials." ')
-                    sys.exit()
+                os.system('zenity --error  --title="Failed to authenticate." --text  "Authentication failure! Please check the credentials." ')
+                sys.exit()
     elif ProtocolSecurity == 'rdp' and activateSSO == 'yes' :
             User, Password = u_gtk.getUserPass('yes', 'Login for Windows')
 
@@ -208,17 +272,32 @@ while True:
             print '\n' + StartCmdline + '\n'
             sys.exit()
 
+    ##### window positioning
+    try:
+        devilspiepid = subprocess.Popen(["/usr/bin/devilspie", "/home/tcos/.devilspie/freerdp.ds"]).pid
+    except:
+        log.log(2, "could not start devilspie")
+        pass
+
+
     returncode = os.system(StartCmdline)
     #print returncode
- 
-    if ExitAction != 'Restart':
-       break
 
     # Check in case of automatic credential parsing if returncode indicates Authentication failure
     # Exhaustive loop prevention
-    if ProtocolSecurity == 'nla' or  ProtocolSecurity == 'tls' and returncode == 33536 :
-        os.system('zenity --error  --title="Failed to authenticate." --text  "Authentication failure! Please check the credentials." ')
-        sys.exit()
+
+    if devilspiepid != 0:
+        os.kill(devilspiepid, signal.SIGTERM)
+
+
+    if ExitAction == 'Restart': 
+        if ProtocolSecurity == 'nla' or  ProtocolSecurity == 'tls' and returncode == 33536 :
+            os.system('zenity --error  --title="Failed to authenticate." --text  "Authentication failure! Please check the credentials." ')
+            sys.exit()
+    else:
+        break
+
+
 
 if ExitAction == 'Logout':
     os.system("tcos-logout")
