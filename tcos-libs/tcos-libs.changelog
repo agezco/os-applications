@@ -1,8 +1,14 @@
-tcos-libs (2.1-8) UNRELEASED; urgency=low
+tcos-libs (2.1-9) unstable; urgency=low
+
+  * tcos.py: refactored writeDesktopFiles() 
+
+ -- Steffen Hoenig <s.hoenig@openthinclient.com>  Sun, 07 Feb 2016 17:26:48 +0000
+
+tcos-libs (2.1-8) unstable; urgency=low
 
   * moved license.py to a new package: tcos-license 
 
- -- Steffen Hoenig <s.hoenig@openthinclient.com>  Thu, 26 Nov 2015 18:22:55 +0000
+ -- Steffen Hoenig <s.hoenig@openthinclient.com>  Sun, 07 Feb 2016 16:05:10 +0000
 
 tcos-libs (2.1-6) unstable; urgency=medium
 

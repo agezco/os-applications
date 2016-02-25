@@ -1325,70 +1325,48 @@ class Desktop(Logger):
         f.write("[Desktop Entry]\n")
         for k, v in desktop_file_entry_dict.iteritems():
             f.write(k + "=" + v + "\n")
-        os.chmod(desktop_file, 0o554)
+        os.chmod(desktop_file, 0o775)
         f.close()
 
-    def writeDesktopFiles(self, desktop_file_foldernames=[], autostart_desktop_file_foldernames=[]):
-        if desktop_file_foldernames == []:
-            homedir = os.getenv("HOME")
-            desktop_file_foldernames = [homedir + "/Desktop",
-                                        homedir + "/.local/share/applications/"]
-        elif type(desktop_file_foldernames) == types.StringType:
-            desktop_file_foldernames = [desktop_file_foldernames]
-
-        if autostart_desktop_file_foldernames == []:
-            homedir = os.getenv("HOME")
-            autostart_desktop_file_foldernames = [homedir + "/.config/autostart/"]
-        elif type(autostart_desktop_file_foldernames) == types.StringType:
-            autostart_desktop_file_foldernames = [autostart_desktop_file_foldernames]
-
+    def writeDesktopFiles(self,
+                          home=os.getenv("HOME"),
+                          desktop_file_foldernames={
+                              'autostart': '.config/autostart',
+                              'applications': '.local/share/applications',
+                              'desktop': 'Desktop'}):
         l = Ldap()
         apps_dn_list = l.getAppsDn(self.CLIENT_DN,
                                    self.USER_DN,
                                    self.LDAP_URL)
-
+        # create desktop file for every app, by merging the static desktop file
+        # with the dynamic data of ldap
         for app_dn in apps_dn_list:
             entry = l.getNismapentry(app_dn, self.LDAP_URL)
             app_dn_info_dict = l.getGroupOfUniqueNamesInfo(app_dn, self.LDAP_URL)
             app_schema = app_dn_info_dict["schema"]
-            if not os.path.exists(os.path.join(os.path.sep, "opt", app_schema, "tcos", ".nodesktop")):
-                merge_desktop_filename = os.path.join(os.path.sep,
-                                                      "opt",
-                                                      app_schema,
-                                                      "tcos",
-                                                      app_schema + ".desktop")
+            app_dir_path = os.path.join(os.path.join("/", "opt", app_schema))
+            app_file_path = os.path.join(os.path.join(app_dir_path, "tcos", app_schema+".desktop"))
 
+            desktop_entry_dict = self.getMergedDesktopFileEntries(
+                                     app_dn,
+                                     app_dn_info_dict,
+                                     app_file_path)
+            # (1) for every app
+            self.writeDesktopFile(desktop_entry_dict, desktop_file_foldernames['applications'])
 
-                desktop_entry_dict = self.getMergedDesktopFileEntries(
-                                         app_dn,
-                                         app_dn_info_dict,
-                                         merge_desktop_filename)
+            # (2) .nodesktop 
+            if os.path.exists(os.path.join(app_dir_path, "tcos", ".nodesktop")) or \
+               os.path.exists(os.path.join(app_dir_path, "tcos", ".desktop-reload")):
+                # just create the desktop file in .local/share/applications
+                pass
+            else:
+                # create desktop file on Desktop too
+                self.writeDesktopFile(desktop_entry_dict, desktop_file_foldernames['desktop'])
 
-                for desktop_file_foldername in desktop_file_foldernames:
-                    self.writeDesktopFile(desktop_entry_dict, desktop_file_foldername)
-
-                for autostart_desktop_file_foldername in autostart_desktop_file_foldernames:
-                    if entry.get('General.Autostart') == "Yes":
-                        self.writeDesktopFile(desktop_entry_dict, autostart_desktop_file_foldername)
-
-            if os.path.exists(os.path.join(os.path.sep, "opt", app_schema, "tcos", app_schema + ".desktop-reload")):
-                merge_desktop_filename = os.path.join(os.path.sep,
-                                                      "opt",
-                                                      app_schema,
-                                                      "tcos",
-                                                      app_schema + ".desktop")
-
-                desktop_entry_dict = self.getMergedDesktopFileEntries(
-                                         app_dn,
-                                         app_dn_info_dict,
-                                         merge_desktop_filename)
-
-                # check if desktop already up and running
-                if commands.getoutput('ps ax | grep /etc/gdm/PostLogin/Default | grep -v grep'):
-                    for autostart_desktop_file_foldername in autostart_desktop_file_foldernames:
-                        self.writeDesktopFile(desktop_entry_dict, autostart_desktop_file_foldername)
-                else:
-                    subprocess.Popen(desktop_entry_dict["Exec"], shell=True)
+            # (3) autostart 
+            if entry.get('General.Autostart') == "Yes" or \
+               os.path.exists('/'.join([app_dir_path, "tcos", ".desktop-reload"])):
+                self.writeDesktopFile(desktop_entry_dict, desktop_file_foldernames['autostart'])
 
     def removeDesktopFiles(self, desktop_file_foldernames=[]):
         desktop_file_filenames = []

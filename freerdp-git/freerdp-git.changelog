@@ -1,3 +1,11 @@
+freerdp-git (2.1-1.2-23) unstable; urgency=medium
+
+  * added Manager configuration field: override following manual parameter
+    settings 
+  * 
+
+ -- Lars Behrens <l.behrens@openthinclient.com>  Fri, 22 Feb 2016 17:22:30 +0100
+
 freerdp-git (2.1-1.2-22) unstable; urgency=medium
 
   * changed: build compression to Zgzip

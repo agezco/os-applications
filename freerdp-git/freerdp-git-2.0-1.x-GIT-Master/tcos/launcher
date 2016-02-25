@@ -153,8 +153,11 @@ while True:
     Version = l.ENTRY.get('General.Version', '/v1.2')
     # print Version
 
-    # have the manual parameters	
-    Parameters += ' ' + manualParameters
+    # have the manual parameters
+    if l.ENTRY.get('Application.ConnectionParameters.override', 'false') == 'false':
+        Parameters += ' ' + manualParameters
+    else:
+        Parameters = manualParameters
 
     # add session credentials if not empty
     if Domain != '': Parameters += ' /d:' + Domain 
