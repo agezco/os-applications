@@ -1,3 +1,10 @@
+tcos-libs (2.1-11) unstable; urgency=low
+
+  * added Cmd() Class to wrapp shell-Calls
+  * added mergeWithLdap() to Launcher Class -> options dict pattern 
+
+ -- Steffen Hoenig <s.hoenig@openthinclient>  Mon, 07 Mar 2016 20:45:24 +0000
+
 tcos-libs (2.1-10) unstable; urgency=low
 
   * tcos.py: fix for for old-style .desktop-reload based packages 
