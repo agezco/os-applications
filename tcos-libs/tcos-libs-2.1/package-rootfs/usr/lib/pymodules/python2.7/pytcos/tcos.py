@@ -338,6 +338,29 @@ class Util(Logger):
     def shellQuoteList(self, args):
         return " ".join([self.shellQuote(arg) for arg in args])
 
+    def mergeWithLdap(self, target, source=None):
+        '''
+        merges two ENTRY dicts where source values win over the one's from target
+
+        options = dict()
+        # Key -> Config name, list: 0 -> default value additional, 1-> non-ldap data
+        options = {
+            'Config.Option1': { 'value': 'bla', params: ['real_bla', 'another_bla']},
+            'Config.Option3': { 'value': 'wurst' }
+            }
+        l = tcos.Launcher()
+        l.mergeWithLdap(OPTIONS)
+        '''
+        if not source:
+            launcher = Launcher(hashed_dn=sys.argv[1])
+            source = launcher.ENTRY
+
+        for k in source.keys():
+            if k in target:
+                target[k]['value'] = source[k]
+            else:
+                target[k] = {'value': source[k], 'params': []}
+
 class System(Logger):
     def __init__(self):
         # self.LOG is filled and needed by Logger.log()
@@ -1469,27 +1492,6 @@ class Launcher(Logger):
             # do something about the missing stuff
             return {}
 
-    def mergeWithLdap(self, target, source=None):
-        '''
-        merges two ENTRY dicts where source values win over the one's from target
-        
-        options = dict()
-        # Key -> Config name, list: 0 -> default value additional, 1-> non-ldap data
-        options = {
-            'Config.Option1': { 'value': 'bla', params: ['real_bla', 'another_bla']},
-            'Config.Option3': { 'value': 'wurst' }
-            }
-        l = tcos.Launcher()
-        l.mergeWithLdap(OPTIONS)  
-        '''
-        if not source:
-            source = self.ENTRY
-
-        for k in source.keys():
-            if k in target:
-                target[k]['value'] = source[k]
-            else:
-                target[k] = {'value': source[k], 'params': []}
 
 class Cmd(Logger):
     def __init__(self, exe=None):

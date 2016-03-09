@@ -1,3 +1,9 @@
+tcos-libs (2.1-13) UNRELEASED; urgency=low
+
+  * moved mergeWithLdap() to class Util() 
+
+ -- Steffen Hoenig <s.hoenig@openthinclient>  Wed, 09 Mar 2016 18:14:04 +0000
+
 tcos-libs (2.1-12) unstable; urgency=low
 
   * Launcher.mergeWithLdap(): changed  options pattern to options['Option']['value']
