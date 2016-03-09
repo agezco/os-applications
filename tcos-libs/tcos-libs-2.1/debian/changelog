@@ -1,3 +1,9 @@
+tcos-libs (2.1-12) unstable; urgency=low
+
+  * Launcher.mergeWithLdap(): changed  options pattern to options['Option']['value']
+
+ -- Steffen Hoenig <s.hoenig@openthinclient>  Wed, 09 Mar 2016 16:20:34 +0000
+
 tcos-libs (2.1-11) unstable; urgency=low
 
   * added Cmd() Class to wrapp shell-Calls

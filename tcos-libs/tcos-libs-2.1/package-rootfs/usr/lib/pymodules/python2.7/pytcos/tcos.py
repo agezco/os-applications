@@ -1476,8 +1476,8 @@ class Launcher(Logger):
         options = dict()
         # Key -> Config name, list: 0 -> default value additional, 1-> non-ldap data
         options = {
-            'Config.Option1': ['bla', 'real_bla'],
-            'Config.Option3': ['wurst']
+            'Config.Option1': { 'value': 'bla', params: ['real_bla', 'another_bla']},
+            'Config.Option3': { 'value': 'wurst' }
             }
         l = tcos.Launcher()
         l.mergeWithLdap(OPTIONS)  
@@ -1487,9 +1487,9 @@ class Launcher(Logger):
 
         for k in source.keys():
             if k in target:
-                target[k][0] = source[k]
+                target[k]['value'] = source[k]
             else:
-                target[k] = [source[k]]
+                target[k] = {'value': source[k], 'params': []}
 
 class Cmd(Logger):
     def __init__(self, exe=None):
