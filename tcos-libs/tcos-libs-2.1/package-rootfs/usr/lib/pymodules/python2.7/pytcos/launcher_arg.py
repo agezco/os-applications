@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-# Standard modules
+# Standard tcosmodules
 import sys
 import os
 import base64
 
-# TCOS modules
+# TCOS tcosmodules
 import tcos
 
 user = os.getenv('USER')
