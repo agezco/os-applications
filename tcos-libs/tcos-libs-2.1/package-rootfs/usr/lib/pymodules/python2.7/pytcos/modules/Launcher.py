@@ -2,11 +2,13 @@ import base64
 import os
 import sys
 
-from pytcos.tcosmodules.Logger import Logger
-from pytcos.tcos.Config import Config
+from System import System
+from Ldap import Ldap
+from Logger import Logger
+from pytcos.Config import Config
 
 
-class Launcher(Logger,Config):
+class Launcher(Logger, Config):
     def __init__(self, ldap_url=None, hashed_dn=None):
         # self.LOG is filled and needed by Logger.log()
         self.LOG = []
@@ -25,7 +27,6 @@ class Launcher(Logger,Config):
 
         if self.LDAP_URL:
             self.ENTRY = self.getEntry()
-
 
     def getDn(self):
         if self.HASHED_DN:
@@ -56,9 +57,9 @@ class Launcher(Logger,Config):
                 ", LDAP_URL: " + str(self.LDAP_URL)
 
             e_user = "Anwendung nicht gefunden!" + "\n\n" + \
-                     "Der Anwdendungseintrag hat sich geändert." +"\n" + \
+                     "Der Anwendungseintrag hat sich geaendert." + "\n" + \
                      "Melden Sie sich neu an, " + \
-                     "damit die geänderten Einstellungen wirksam werden." + "\n\n" + \
+                     "damit die geaenderten Einstellungen wirksam werden." + "\n\n" + \
                      "Details:" + "\n" + \
                      "DN: " + str(self.DN) + "\n" + \
                      "LDAP_URL: " + str(self.LDAP_URL)
@@ -78,4 +79,3 @@ class Launcher(Logger,Config):
         else:
             # do something about the missing stuff
             return {}
-

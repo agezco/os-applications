@@ -4,8 +4,8 @@ import sys
 import types
 
 
-from pytcos.tcosmodules.Logger import Logger
-from pytcos.tcos.Config import Config
+from Logger import Logger
+from pytcos.Config import Config
 
 class Desktop(Logger,Config):
     def __init__(self, client_dn=None, user_dn=None, ldap_url=None):

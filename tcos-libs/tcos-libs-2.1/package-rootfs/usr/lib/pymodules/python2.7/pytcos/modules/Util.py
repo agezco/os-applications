@@ -5,8 +5,8 @@ import sys
 import time
 import types
 
-from pytcos.tcos.modules.Logger import Logger
-from pytcos.tcos.Config import Config
+from Logger import Logger
+from pytcos.Config import Config
 
 class Util(Logger,Config):
     def __init__(self):

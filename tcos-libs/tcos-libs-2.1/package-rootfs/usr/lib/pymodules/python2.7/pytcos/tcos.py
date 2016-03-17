@@ -36,15 +36,17 @@ import syslog
 import types
 import urllib
 
-''' Provides Legacy pytcos Interface compatibility '''
+'''Superclass all pytcos classes are derived from '''
 import Config
+
+''' Provides Legacy pytcos Interface compatibility '''
 from modules.Ldap import Ldap
-# from tcosmodules.Desktop import Desktop
-# from tcosmodules.Launcher import Launcher
-# from pytcos.modules.Cmd import Cmd
-# from pytcos.modules.Logger import Logger
-# from pytcos.modules.Util import Util
-# from pytcos.modules.System import System
+from modules.Desktop import Desktop
+from modules.Launcher import Launcher
+from modules.Cmd import Cmd
+from modules.Logger import Logger
+from modules.Util import Util
+from modules.System import System
 
 # Classes
 #

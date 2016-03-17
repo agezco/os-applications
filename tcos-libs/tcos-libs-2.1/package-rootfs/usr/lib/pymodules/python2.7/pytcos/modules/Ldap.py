@@ -9,7 +9,7 @@ import types
 import urllib
 
 from Logger import Logger
-from pytcos.tcos import Config
+from pytcos.Config import Config
 
 
 class Ldap(Logger,Config):

@@ -3,8 +3,8 @@ import os
 import re
 import sys
 
-from pytcos.tcosmodules.Logger import Logger
-from pytcos.tcos.Config import Config
+from Logger import Logger
+from pytcos.Config import Config
 
 class System(Logger,Config):
     def __init__(self):

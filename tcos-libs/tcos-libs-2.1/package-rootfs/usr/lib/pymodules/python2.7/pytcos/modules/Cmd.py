@@ -2,8 +2,8 @@ import copy
 import subprocess
 
 
-from pytcos.tcosmodules.Logger import Logger
-from pytcos.tcos.Config import Config
+from Logger import Logger
+from pytcos.Config import Config
 
 
 class Cmd(Logger, Config):
