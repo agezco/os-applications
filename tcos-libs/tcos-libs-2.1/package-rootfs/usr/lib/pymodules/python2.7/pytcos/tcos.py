@@ -21,42 +21,7 @@
 # Place - Suite 330, Boston, MA 02111-1307, USA.
 ###############################################################################
 
-import base64
-import commands
-import copy
-import ldap
-import ldap.filter
-import ldapurl
-import os
-import re
-import sys
-import time
-import subprocess
-import syslog
-import types
-import urllib
+''' This files provides legacy api support '''
 
-'''Superclass all pytcos classes are derived from '''
-import Config
-
-''' Provides Legacy pytcos Interface compatibility '''
-from modules.Ldap import Ldap
-from modules.Desktop import Desktop
-from modules.Launcher import Launcher
-from modules.Cmd import Cmd
-from modules.Logger import Logger
-from modules.Util import Util
-from modules.System import System
-
-# Classes
-#
-
-
-
-
-
-
-
-
-
-
+''' pytcos-api v1 <original> '''
+from original.original import *
