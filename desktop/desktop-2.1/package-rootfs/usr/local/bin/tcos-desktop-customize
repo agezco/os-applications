@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-import pytcos.tcos as tcos
+# import pytcos.tcos as tcos
+import pytcos.current.*
 import os
 import re
+import pprint
+import sys
 import time
 
 from subprocess import call, check_call
@@ -12,6 +15,7 @@ s = tcos.System()
 d = tcos.Desktop()
 u = tcos.Util()
 log = tcos.Logger()
+cmd = tcos.Cmd()
 
 ldap_url = s.getLdapUrl()
 client_dn = l.getClientDn(s.getMac(), ldap_url)
@@ -19,147 +23,228 @@ location_dn = l.getLocationsDn(client_dn, ldap_url)
 user_dn = l.getUserDn('tcos', ldap_url)
 apps_dn_list = l.getAppsDn(client_dn, user_dn, ldap_url)
 
+DEBUG = True
+assigned = False
+
 PATH_SCHEMA='/etc/dconf/db/local.d/'
 FILE='01_desktop'
 
+class Compatibility:
 
-def format_ldap_key(ldap_keys):
-    '''transform ldap key to a dict with a schema key
-    '''
-
-    def ldap_to_dict(entry):
-        '''take a tuple and return a dict with at least a key named schema
+    def format_ldap_key(self,ldap_keys):
+        '''transform ldap key to a dict with a schema key
         '''
-        # re -> matches the last part of the ldap_entry (is a tuple)
-        p = re.compile(r'[a-zA-Z0-9-]*$')
-        m = p.search(entry[0])
-        s = m.start()
-        # get the index of the match, thus to get the end of the string in
-        # front -> s - 1
-        schema = entry[0][:s-1]
-	# dconf uses / to separate not .
-	schema = schema.replace('_', '/')
-        key = entry[0][s:]
-        value = entry[1]
-        return {'schema':schema, key:value}
 
-    list_dicts = []
+        def ldap_to_dict(entry):
+            '''take a tuple and return a dict with at least a key named schema
+            '''
+            # re -> matches the last part of the ldap_entry (is a tuple)
+            p = re.compile(r'[a-zA-Z0-9-]*$')
+            m = p.search(entry[0])
+            s = m.start()
+            # get the index of the match, thus to get the end of the string in
+            # front -> s - 1
+            schema = entry[0][:s-1]
+        # dconf uses / to separate not _ .
+            schema = schema.replace('_', '/')
+            key = entry[0][s:]
+            value = entry[1]
+            return {'schema':schema, key:value}
+        list_dicts = []
+        for items in ldap_keys.items():
+            list_dicts.append(ldap_to_dict(items))
+        return list_dicts
 
-    for items in ldap_keys.items():
 
-        list_dicts.append(ldap_to_dict(items))
-
-    return list_dicts
-
-
-def merge_dicts(d_list, special_key):
-    '''merge groups of dictionaries. Use value of special_key to form
-       groups.
-    '''
-    def merge_group(d_list, group):
-        '''merge dictionaries that contain (key, value), ignore others.
+    def merge_dicts(self, d_list, special_key):
+        '''merge groups of dictionaries. Use value of special_key to form
+           groups.
         '''
-        merged_dict = {}
-        for d in d_list:
-            if group in d.items():
-                merged_dict.update(d)
-        return merged_dict
+        def merge_group(d_list, group):
+            '''merge dictionaries that contain (key, value), ignore others.
+            '''
+            merged_dict = {}
+            for d in d_list:
+                if group in d.items():
+                    merged_dict.update(d)
+            return merged_dict
 
-    groups = [item
-              for d in d_list
-              for item in d.items() if item[0] == special_key]
-    # eliminate duplicate groups
-    groups = set(groups)
-    # merge the dicts that contain the special_key
-    merged = [merge_group(d_list, group) for group in groups]
-    # add the remaining dicts to the list
-    [merged.append(d) for d in d_list if not special_key in d]
+        groups = [item
+                  for d in d_list
+                  for item in d.items() if item[0] == special_key]
+        # eliminate duplicate groups
+        groups = set(groups)
+        # merge the dicts that contain the special_key
+        merged = [merge_group(d_list, group) for group in groups]
+        # add the remaining dicts to the list
+        [merged.append(d) for d in d_list if not special_key in d]
 
-    return merged
+        return merged
 
-def format_key(k_dict):
-    '''take a key with schema dict and return a formatted string
-    '''
+    def format_key(self, k_dict):
+        '''take a key with schema dict and return a formatted string
+        '''
 
-    def buul(value):
-	if value:
-	  return 'true'
-	else:
-	  return 'false'
-
-    try:
-        formatted_key = '[' + k_dict['schema'] + ']' + '\n'
-    except KeyError as err:
-        print('Schema not found:',err)
-
-    for items in k_dict.items():
-        print("items: {}".format(items))
-        if items[0] != 'schema':
-            if isinstance(items[1], bool):
-                formatted_key += items[0] + '=' + buul(items[1]) + '\n'
-            elif isinstance(items[1], float):
-                formatted_key += items[0] + '=' + str(items[1]) + '\n'
-            elif isinstance(items[1], str):
-                    formatted_key += items[0] + '=' + '"' + items[1] + '"' + '\n'
-            elif isinstance(items[1], list):
-		    formatted_key += items[0] + '=' + str(items[1]) + '\n'
-	    elif isinstance(items[1], int):
-	        formatted_key += items[0] + '=' + str(items[1]) + '\n'
+        def buul(value):
+            if value:
+                return 'true'
             else:
-                print('Value is of type',type(items[1]),', which is not accepted')
-                return ''
-
-    return formatted_key
-
-
-def write_keys(file_path, config_dicts):
-
-    with open(file_path, 'w') as fobj:
-        for d in config_dicts:
-            fobj.write(format_key(d))
-
-def write_slideshow(folder):
-    with open('/usr/share/applications/screensavers/personal-slideshow.desktop', 'w+') as d_file:
-        desktop_file = \
-'''
-[Desktop Entry]
-Name=Pictures Folder
-Name[de]=Bilderordner
-Exec=/usr/lib/mate-screensaver/slideshow {args}
-tartupNotify=false
-Terminal=false
-Type=Application
-Categories=Screensaver;
-Keywords=MATE;screensaver;grid;pulsing;colors;
-OnlyShowIn=MATE;
-'''
+                return 'false'
+        formatted_key = ''
         try:
-            d_file.write(desktop_file.format(args='--location=' + slideshow))
-	except:
-            log.log(3,'Failed write file : /usr/share/applications/screensavers/personal-slideshow.desktop')
+            formatted_key = '[' + k_dict['schema'] + ']' + '\n'
+        except KeyError as err:
+            print('Schema not found:', err)
+
+        for items in k_dict.items():
+            print("items: {}".format(items))
+            if items[0] != 'schema':
+                if isinstance(items[1], bool):
+                    formatted_key += items[0] + '=' + buul(items[1]) + '\n'
+                elif isinstance(items[1], float):
+                    formatted_key += items[0] + '=' + str(items[1]) + '\n'
+                elif isinstance(items[1], str):
+                    formatted_key += items[0] + '=' + '"' + items[1] + '"' + '\n'
+                elif isinstance(items[1], list):
+                    formatted_key += items[0] + '=' + str(items[1]) + '\n'
+                elif isinstance(items[1], int):
+                    formatted_key += items[0] + '=' + str(items[1]) + '\n'
+                else:
+                    print('Value is of type', type(items[1]), ', which is not accepted')
+                    return ''
+
+        return formatted_key
 
 
-def slideshow_folder(slideshow):
+    def write_keys(self, file_path, config_dicts):
+        with open(file_path, 'w+') as fobj:
+            for d in config_dicts:
+                fobj.write(self.format_key(d))
+
+    def dconf_selector(self, d_list):
+        '''only return entries with dconf flag.
+        convert to write_keys() compatible dict'''
+        conv_list = []
+        '''iterate over dict groups. Each group contains dconf options relatet to a xml group'''
+        for d in d_list:
+            ''' save the xml group information '''
+            conv_dict = {'schema':d['schema']}
+            ''' take all keys entries except group information consisting 'dconf' flag.
+            store them in write_keys compatible format'''
+            if 'version' in d:
+                break
+            for k in d.keys():
+                if k != 'schema' and d[k]['dconf'] == 'true':
+                    conv_dict[k]=d[k]['value']
+            conv_list.append(conv_dict)
+
+        return conv_list
+
+class Displaymanager:
+    options = {}
+    init_config = {}
+    dia_config = {}
+    saver_config = {}
+    energy_config = {}
+
+    def __init__(self, options):
+        self.options = options
+
+    def getDconf(self,dconf_options):
+        d_config = {}
+        try:
+            for option in dconf_options:
+                d_config[option]=self.options[option]
+            return d_config
+        except Exception as e:
+            log.log(3, 'dconf incomplete:'+e)
+
+    def setDia(self):
+        self.dia_config = {}
+        dconf_options = ['org_mate_screensaver.mode','org_mate_screensaver.themes']
+        try:
+            self.dia_config['cmd'] = []
+            self.dia_config['dconf'] = self.getDconf(dconf_options)
+
+            if not DEBUG == True:
+                with open('/usr/share/applications/screensavers/personal-slideshow.desktop', 'w+') as d_file:
+                    desktop_file = \
+                        '''
+                        [Desktop Entry]
+                        Name=Pictures Folder
+                        Name[de]=Bilderordner
+                        Exec=/usr/lib/mate-screensaver/slideshow {args}
+                        tartupNotify=false
+                        Terminal=false
+                        Type=Application
+                        Categories=Screensaver;
+                        Keywords=MATE;screensaver;grid;pulsing;colors;
+                        OnlyShowIn=MATE;
+                        '''
+            else:
+                pprint(self.dia_config)
+
+            d_file.write(desktop_file.format(args='--location=' + self.dia_config['dconf']['org_mate_screensaver.themes']['value']))
+        except Exception as e:
+            log.log(3,'diashow configuration failed:'+e)
+        return self.dia_config
+
+    def setSaver(self):
+        self.saver_config = {}
+        dconf_options = ['org_mate_screensaver.dpms-time']
+        try:
+            t_dpms = self.options['org_mate_screensaver.dpms-time']['value']
+            self.saver_config['cmd'] = ["xset s on", ' '.join(["xset s", t_dpms])]
+            self.saver_config['dconf'] = self.getDconf(dconf_options)
+
+            if not DEBUG == True:
+                cmd(';'.join(self.saver_config['cmd']))
+            else:
+                pprint(self.saver_config)
+
+        except Exception as e:
+            log.log(3,"screensaver configuration failed:"+e)
+        return self.saver_config
+
+    def setEnergy(self):
+        self.energy_config = {}
+        dconf_options = ['org_mate_screensaver.dpms-time', 'org_mate_screensaver.dpms-on']
+        try:
+            time = self.options[dconf_options[0]]['value']
+            self.energy_config['cmd'] = ['xset +dpms', ' '.join(["xset dpms", str(time), str(time), str(time)])]
+            self.energy_config['dconf'] = self.getDconf(dconf_options)
+
+            if not DEBUG == True:
+                cmd(';'.join(self.enery_config['cmd']))
+            else:
+                pprint(self.energy_config)
+        except Exception as e:
+            log.log(3,"energysaver configuration failed:"+e)
+        return options
+
+
+    def screenInitializer(self):
+        self.init_config = {}
+        try:
+            self.init_config['cmd'] = ['xset s off', 'xset s noblank', 'xset -dpms']
+
+            if not DEBUG == True:
+                cmd(';'.join(self.init_config['cmd']))
+            else:
+                pprint(self.init_config)
+        except Exception as e :
+            log.log(3, "screenInitializer failed:"+e)
+
+def pulseaudio_config(options):
     try:
-        d_file = open('/usr/share/applications/screensavers/personal-slideshow.desktop', 'r', -1) 
-        d_buffer = d_file.read().split('\n')
-        d_file.close()
+        setMaster = ' '.join(["amixer -D pulse set Master", options['pulseaudio.master-volume']['value']])
     except:
-        log.log(3,'Failed to read: /usr/share/applications/screensavers/personal-slideshow.desktop')
+        log.log(3, 'master-volume format error')
         pass
-    try:
-        d_index = d_buffer.index('Exec=/usr/lib/mate-screensaver/slideshow')
-    except:
-        log.log(3,'Entry: Exec=/usr/lib/mate-screensaver/slideshow in /usr/share/applications/screensavers/personal-slideshow.desktop not found')
-    d_extend = d_buffer.pop(d_index) + ' --location=' + slideshow
-    d_buffer.insert(d_index, d_extend)
-    try:
-        d_file = open('/usr/share/applications/screensavers/personal-slideshow.desktop', 'w', -1)        
-        d_file.writelines(["%s\n" % item for item in d_buffer])
-        d_file.flush()
-        d_file.close()
-    except:
-        log.log(3,'Failed write file : /usr/share/applications/screensavers/personal-slideshow.desktop')
+    else:
+        log.log(0,' '.join(['pulseaudio Volume:', setMaster]))
+        call(setMaster, shell=True)
+
 
 if __name__ == '__main__':
     '''IMPORTANT: As there is no trivial way to identify a single app_dn, this
@@ -168,27 +253,8 @@ if __name__ == '__main__':
     for app_dn in apps_dn_list:
        unique_name = l.getGroupOfUniqueNamesInfo(app_dn, ldap_url)
        if unique_name['schema'] == 'desktop':
+           assigned = True
            ENTRY = l.getNismapentry(app_dn, ldap_url)
-           # Customize desktop file, so slideshow starts with custom location 
-           if 'org_mate_screensaver.custom-slideshow' in ENTRY:
-            slideshow = ENTRY['org_mate_screensaver.custom-slideshow']
-            if not os.path.exists(slideshow):
-                log.log(2,"path to slideshow does not exist!")
-            elif slideshow != '':
-                write_slideshow(slideshow)
-            ENTRY.pop('org_mate_screensaver.custom-slideshow')
-            ENTRY['org_mate_screensaver.mode'] = 'single'
-            ENTRY['org_mate_screensaver.themes'] = ['screensavers-personal-slideshow']
-
-    ### predefined global audio Volume ###
-    try:
-        setMaster = (' ').join("amixer -D pulse set Master", ENTRY['pulseaudio.master-volume'])
-    except:
-        log.log(3, 'master-volume format error')
-        pass
-    else:
-        log.log(0,(' ').join('pulseaudio Volume:', setMaster))
-        call(setMaster, shell=True)
 
     '''IMPORTANT: As the java component does not initialize empty elements we
        do need to provide the default settings as a dict
@@ -201,35 +267,74 @@ if __name__ == '__main__':
         log.log(3,"screensaver incomplete")
         pass
 
-    DEFAULT = {'org_mate_desktop_media-handling.automount': True,
-               'org_mate_desktop_media-handling.automount-open': False,
-               'org_mate_panel_toplevels_top.orientation': 'top',
-               'org_mate_panel_toplevels_top.auto-hide': False,
-               'org_mate_screensaver.mode': "blank-only",
-               'org_mate_screensaver.themes': "[]",
-               'org_mate_screensaver.idle-activation-enabled': False,
-               'org_mate_screensaver.lock-enabled': False,
-               'org_mate_screensaver.dpms-on': True,
-               'org_mate_screensaver.dpms-time': 600,
-               'org_mate_power-manager.sleep-display-ac': 600,
-               'org_mate_marco_global-keybindings.run-command-1': '<Ctrl><Alt>x',
-               'org_mate_marco_global-keybindings.switch-windows': '<Alt>Tab',
-               'org_mate_marco_global-keybindings.numlock': 'none',
-               'org_mate_desktop_session.logout-prompt': True,
-               'org_mate_desktop_session.idle-delay': 5 }
 
-    try:
-        ENTRY.pop('schema_version')
-        # overwrite values from DEFAULT with managersettings
-        DEFAULT.update(ENTRY)
-    except:
-        pass
+    ''' This dictionary contains all ldap key-value pairs.
+    format: group.[entry|choice]:[default, dconf-flag, [optional Parameters]]
+    '''
+    options = {
+         'org_mate_desktop_media-handling.automount': {'value':'true', 'dconf':'true'},
+         'org_mate_desktop_media-handling.automount-open': {'value':'false', 'dconf':'true'},
+         'org_mate_panel_toplevels_top.orientation': {'value':'top', 'dconf':'true'},
+         'org_mate_panel_toplevels_top.auto-hide': {'value':'false', 'dconf':'true'},
+         'org_mate_marco_global-keybindings.run-command-1': {'value':'<Ctrl><Alt>x', 'dconf':'true'},
+         'org_mate_marco_global-keybindings.switch-windows': {'value':'<Alt>Tab', 'dconf':'true'},
+         'org_mate_marco_global-keybindings.numlock': {'value':'none', 'dconf':'true'},
+         'org_mate_desktop_session.logout-prompt': {'value':'true', 'dconf':'true'},
+         'org_mate_desktop_session.idle-delay': {'value':5, 'dconf':'true'},
 
+         # ''' diashow: define custom slideshow'''
+         # ''' mode description: blank-only -> screensaver without Theme
+         #                       single -> theme defined in 'themes key'
+         #                       random -> random theme '''
+         'org_mate_screensaver.mode': {'value':"blank-only", 'dconf':'true'},
+         'org_mate_screensaver.themes': {'value':"[]", 'dconf':'true'},
+
+         #''' screensaver: blank screen'''
+         'org_mate_screensaver.idle-activation-enabled': {'value':'false', 'dconf':'true'},
+         'org_mate_screensaver.lock-enabled': {'value':'false', 'dconf':'true'},
+
+         #''' energy saving: turnoff screen '''
+         'org_mate_screensaver.dpms-on': {'value':'true', 'dconf':'true'},
+         'org_mate_screensaver.dpms-time': {'value':600, 'dconf':'true'},
+         'org_mate_power-manager.sleep-display-ac': {'value':600, 'dconf':'true'},
+
+         # no dconf keys
+         #'''These Entries will not appear in dconf'''
+         'org_mate_screensaver.custom-slideshow': {'value':'', 'dconf':'false'},
+         'pulseaudio.master-volume' : {'value' : '70', 'dconf':'false'}
+    }
+
+    u.mergeWithLdap(source=ENTRY, target=options)
+
+    #master audio Volume
+    pulseaudio_config(options)
+    d_manager = Displaymanager(options)
+
+    d_conv = Compatibility()
+
+
+    #hierarchy of screen Manipulation in given order: diashow -> blanking -> energy savings
+    #diashow configuration
+    if options['org_mate_screensaver.mode']['value'] == "single":
+        options = d_manager.setDia()
+    else:
+        #Screensaver Configuration
+        if options['org_mate_screensaver.idle-activation-enabled']['value'] == 'true':
+            options = d_manager.setSaver()
+        else:
+            #energysaving Configuration
+            if options['org_mate_screensaver.dpms-on']['value'] == 'true':
+                options = d_manager.energysaver()
+            else:
+                log.log(0, "screensaver: stick with defaults")
+
+    # Synchronize DEFAULT entries with dconf flag into dconf/
     # e.G. {'org.mate.screensaver.mode': 'blank', 'org.mate.screensaver.}
-    dict_lists = format_ldap_key(DEFAULT)
-    md = merge_dicts(dict_lists, special_key='schema')
+    dict_lists = d_conv.format_ldap_key(options)
+    md = d_conv.dconf_selector(d_conv.merge_dicts(dict_lists, special_key='schema'))
+
     try:
-	    write_keys(os.path.join(PATH_SCHEMA, FILE), md)
+        d_conv.write_keys(os.path.join(PATH_SCHEMA, FILE), md)
     except IOError as err:
         print('Write Error:', err)
 
@@ -237,24 +342,10 @@ if __name__ == '__main__':
     os.system('sudo chmod 000 /usr/bin/caja; sudo dconf update; sleep 1; sudo chmod 755 /usr/bin/caja')
 
 
-    # check, if dpms should be enabled or disabled
-    if DEFAULT['org_mate_screensaver.dpms-on']:
-       call('xset +dpms', shell=True)
-       # set dpms time
-       time =  DEFAULT['org_mate_screensaver.dpms-time']
-       # man xset
-       # [+dpms] [-dpms]
-       #     [dpms standby [ suspend [ off]]]      [dpms force {standby|suspend|off|on}]
-       call(' '.join(['xset dpms', str(time), str(time), str(time)]), shell=True)
-       call(' '.join(['xset s', str(time)]), shell=True)
-    else:
-       call('xset s off; xset s noblank; xset -dpms', shell=True)
-
-
     # numlockx does not match here, because the user session ist not set up yet
     # this is done in tcos-desktop-populate
 
-    numlock = DEFAULT['org_mate_marco_global-keybindings.numlock']
+    numlock = options['org_mate_marco_global-keybindings.numlock']
     if numlock == "on":
         call('touch /tmp/tcos_numlock_ON', shell=True)
     elif numlock == "off":
