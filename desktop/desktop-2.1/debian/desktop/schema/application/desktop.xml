@@ -2,83 +2,104 @@
 <schema name="desktop" type="application" version="1">
   <label lang="de" value="Desktop"/>
   <label lang="en" value="Desktop"/>
+  <label lang="ru" value="Рабочий стол"/>
        <group name="org_mate_desktop_media-handling">
       <label lang="de" value="Externe Medien"/>
       <label lang="en"  value="External media"/>
+      <label lang="ru"  value="Внешние носители"/>
       <choice  name="automount__BOOL" value="true">
           <label lang="de" value="Automount"/>
           <label lang="en" value="Automount"/>
+          <label lang="en" value="Автоматическое монтирование"/>
           <option value="true">
               <label lang="de" value="Ja"/>
               <label lang="en" value="Yes"/>
+              <label lang="ru" value="Да"/>
           </option>
           <option value="false">
               <label lang="de" value="Nein"/>
               <label lang="en" value="No"/>
+              <label lang="ru" value="Нет"/>
           </option>
       </choice>
       <choice  name="automount-show__BOOL" value="true">
           <label lang="de" value="Anzeige des Dateimanagers nach dem Einbinden von Laufwerken"/>
           <label lang="en" value="Show the filemanager after the automount"/>
+          <label lang="ru" value="Показать файловый менеджер после автоматического моннтирования"/>
           <option value="true">
               <label lang="de" value="Ja"/>
               <label lang="en" value="Yes"/>
+              <label lang="ru" value="Да"/>
           </option>
           <option value="false">
               <label lang="de" value="Nein"/>
               <label lang="en" value="No"/>
+              <label lang="ru" value="Нет"/>
           </option>
       </choice>
     </group>
     <group name="org_mate_panel_toplevels_top">
         <label value="Panel" lang="de"/>
         <label value="Panel" lang="en"/>
+        <label value="Panel" lang="Ru"/>
         <choice name="orientation" value="top">
             <label lang="de" value="Taskleiste Ausrichtung"/>
             <label lang="en" value="Taskbar orientation"/>
+            <label lang="en" value="Положение панели задач"/>
             <option value="top">
                 <label lang="de" value="oben"/>
                 <label lang="en" value="top"/>
+                <label lang="ru" value="верх"/>
             </option>
             <option value="bottom">
                 <label lang="de" value="unten"/>
                 <label lang="en" value="bottom"/>
+                <label lang="ru" value="низ"/>
             </option>
         </choice>
      </group> 
       <group name="org_mate_desktop_session">
         <label value="Abmelden" lang="de"/>
         <label value="Logout" lang="en"/>
+        <label value="Logout" lang="ru"/>
           <choice name="logout-prompt__BOOL" value="true">
             <label lang="de" value="Zeige Logout Prompt"/>
             <label lang="en" value="Show logout prompt"/>
+            <label lang="ru" value="Подтверждение выхода"/>
             <option value="true">
                 <label lang="de" value="Ja"/>
                 <label lang="en" value="Yes"/>
+                <label lang="ru" value="Да"/>
             </option>
             <option value="false">
                 <label lang="de" value="Nein"/>
                 <label lang="en" value="No"/>
+                <label lang="ru" value="Нет"/>
             </option>
         </choice>
           <entry name="idle-delay__INT" value="5">
        <label lang="de" value="Zeit bis die Desktop als inaktiv gekennzeichnet wird (in Minuten)"/>
        <label lang="en" value="Time before session is considered idle (minutes)"/>
+       <label lang="ru" value="Время до неактивного состояния (минут)"/>
   </entry>
     </group>
     <group name="org_mate_screensaver">
         <label value="Bildschirmeinstellungen" lang="de"/>
         <label value="Screen settings" lang="en"/>
+        <label value="Параметры экрана" lang="ru"/>
         <choice name="idle-activation-enabled__BOOL" value="false">
             <label lang="de" value="Bildschirmschoner aktivieren"/>
             <label lang="en" value="Enable screen saver"/>
+            <label lang="ru" value="Включить заставку"/>
             <option value="true">
                 <label lang="de" value="Ja"/>
                 <label lang="en" value="Yes"/>
+                <label lang="ru" value="Да"/>
             </option>
             <option value="false">
                 <label lang="de" value="Nein"/>
                 <label lang="en" value="No"/>
+                <label lang="ru" value="Нет"/>
             </option>
         </choice>
         <choice name="lock-enabled__BOOL" value="false">
